@@ -314,13 +314,29 @@
 		 **/
 		public function custom_product_tabs_panel_content( $key, $tab ) {
 
+			/**** For this branch - we're not going to use the `the_content` filter -- other plugins are overriding the content ****/
+
 			// Hardcoding Site Origin Page Builder conflict fix - remove their the_content filter
-			remove_filter( 'the_content', 'siteorigin_panels_filter_content' );
-
-			$content = apply_filters( 'the_content', $tab['content'] );
-
+			// remove_filter( 'the_content', 'siteorigin_panels_filter_content' );
+			// $content = apply_filters( 'the_content', $tab['content'] );
 			// Hardcoding Site Origin Page Builder conflict fix - re-add their the_content filter
-			if ( function_exists( 'siteorigin_panels_filter_content' ) ) add_filter( 'the_content', 'siteorigin_panels_filter_content' );
+			// if ( function_exists( 'siteorigin_panels_filter_content' ) ) add_filter( 'the_content', 'siteorigin_panels_filter_content' );
+
+			/**** We will instead try to replicate `the_content` filter's functionality ****/
+
+			$content = $tab['content'];
+ 			$content = function_exists( 'capital_P_dangit' ) ? capital_P_dangit( $content ) : $content;
+ 			$content = function_exists( 'wptexturize' ) ? wptexturize( $content ) : $content;
+ 			$content = function_exists( 'convert_smilies' ) ? convert_smilies( $content ) : $content;
+ 			$content = function_exists( 'wpautop' ) ? wpautop( $content ) : $content;
+ 			$content = function_exists( 'shortcode_unautop' ) ? shortcode_unautop( $content ) : $content;
+ 			$content = function_exists( 'prepend_attachment' ) ? prepend_attachment( $content ) : $content;
+ 			$content = function_exists( 'wp_make_content_images_responsive' ) ? wp_make_content_images_responsive( $content ) : $content;
+
+ 			// Deal with URLs
+ 			$embed = new WP_Embed;
+			$content = method_exists( $embed, 'autoembed' ) ? $embed->autoembed( $content ) : $content;
+ 
 
 			echo apply_filters( 'yikes_woocommerce_custom_repeatable_product_tabs_heading', '<h2 class="yikes-custom-woo-tab-title yikes-custom-woo-tab-title-'.sanitize_title($tab['title']).'">' . $tab['title'] . '</h2>', $tab );
 			echo apply_filters( 'yikes_woocommerce_custom_repeatable_product_tabs_content', $content, $tab );
